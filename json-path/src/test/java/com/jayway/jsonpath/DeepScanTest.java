@@ -18,29 +18,29 @@ public class DeepScanTest extends BaseTest {
     @Test
     public void when_deep_scanning_non_array_subscription_is_ignored() {
         Object result = JsonPath.parse("{\"x\": [0,1,[0,1,2,3,null],null]}").read("$..[2][3]");
-        assertThat(result).asList().containsOnly(3);
+        assertThat((List) result).containsOnly(3);
         result = JsonPath.parse("{\"x\": [0,1,[0,1,2,3,null],null], \"y\": [0,1,2]}").read("$..[2][3]");
-        assertThat(result).asList().containsOnly(3);
+        assertThat((List)result).containsOnly(3);
 
         result = JsonPath.parse("{\"x\": [0,1,[0,1,2],null], \"y\": [0,1,2]}").read("$..[2][3]");
-        assertThat(result).asList().isEmpty();
+        assertThat((List)result).isEmpty();
     }
 
     @Test
     public void when_deep_scanning_null_subscription_is_ignored() {
         Object result = JsonPath.parse("{\"x\": [null,null,[0,1,2,3,null],null]}").read("$..[2][3]");
-        assertThat(result).asList().containsOnly(3);
+        assertThat((List)result).containsOnly(3);
         result = JsonPath.parse("{\"x\": [null,null,[0,1,2,3,null],null], \"y\": [0,1,null]}").read("$..[2][3]");
-        assertThat(result).asList().containsOnly(3);
+        assertThat((List)result).containsOnly(3);
     }
 
     @Test
     public void when_deep_scanning_array_index_oob_is_ignored() {
         Object result = JsonPath.parse("{\"x\": [0,1,[0,1,2,3,10],null]}").read("$..[4]");
-        assertThat(result).asList().containsOnly(10);
+        assertThat((List)result).containsOnly(10);
 
         result = JsonPath.parse("{\"x\": [null,null,[0,1,2,3]], \"y\": [null,null,[0,1]]}").read("$..[2][3]");
-        assertThat(result).asList().containsOnly(3);
+        assertThat((List)result).containsOnly(3);
     }
 
     @Test
@@ -57,25 +57,25 @@ public class DeepScanTest extends BaseTest {
     @Test
     public void when_deep_scanning_illegal_property_access_is_ignored() {
         Object result = JsonPath.parse("{\"x\": {\"foo\": {\"bar\": 4}}, \"y\": {\"foo\": 1}}").read("$..foo");
-        assertThat(result).asList().hasSize(2);
+        assertThat((List)result).hasSize(2);
 
         result = JsonPath.parse("{\"x\": {\"foo\": {\"bar\": 4}}, \"y\": {\"foo\": 1}}").read("$..foo.bar");
-        assertThat(result).asList().containsOnly(4);
+        assertThat((List)result).containsOnly(4);
         result = JsonPath.parse("{\"x\": {\"foo\": {\"bar\": 4}}, \"y\": {\"foo\": 1}}").read("$..[*].foo.bar");
-        assertThat(result).asList().containsOnly(4);
+        assertThat((List)result).containsOnly(4);
         result = JsonPath.parse("{\"x\": {\"foo\": {\"baz\": 4}}, \"y\": {\"foo\": 1}}").read("$..[*].foo.bar");
-        assertThat(result).asList().isEmpty();
+        assertThat((List)result).isEmpty();
     }
 
     @Test
     public void when_deep_scanning_illegal_predicate_is_ignored() {
         Object result = JsonPath.parse("{\"x\": {\"foo\": {\"bar\": 4}}, \"y\": {\"foo\": 1}}").read(
                 "$..foo[?(@.bar)].bar");
-        assertThat(result).asList().containsOnly(4);
+        assertThat((List)result).containsOnly(4);
 
         result = JsonPath.parse("{\"x\": {\"foo\": {\"bar\": 4}}, \"y\": {\"foo\": 1}}").read(
                 "$..[*]foo[?(@.bar)].bar");
-        assertThat(result).asList().containsOnly(4);
+        assertThat((List)result).containsOnly(4);
     }
 
     @Test
@@ -84,7 +84,7 @@ public class DeepScanTest extends BaseTest {
 
         Object result = JsonPath.parse("[{\"x\": {\"foo\": {\"x\": 4}, \"x\": null}, \"y\": {\"x\": 1}}, {\"x\": []}]").read(
                 "$..x");
-        assertThat(result).asList().hasSize(5);
+        assertThat((List)result).hasSize(5);
 
         // foo.bar must be found in every object node after deep scan (which is impossible)
         assertEvaluationThrows("{\"foo\": {\"bar\": 4}}", "$..foo.bar", PathNotFoundException.class, conf);
@@ -98,7 +98,7 @@ public class DeepScanTest extends BaseTest {
                 "$..['a', 'c']");
         // This is current deep scan semantics: only objects containing all properties specified in multiprops token are
         // considered.
-        assertThat(result).asList().hasSize(1);
+        assertThat((List)result).hasSize(1);
         result = ((List)result).get(0);
 
         assertThat(result).isInstanceOf(Map.class);
@@ -109,7 +109,7 @@ public class DeepScanTest extends BaseTest {
         result = using(conf).parse("[{\"a\": \"a-val\", \"b\": \"b-val\", \"c\": \"c-val\"}, [1, 5], {\"a\": \"a-val\"}]").read(
                 "$..['a', 'c']");
         // todo: deep equality test, but not tied to any json provider
-        assertThat(result).asList().hasSize(2);
+        assertThat((List)result).hasSize(2);
         for (final Object node : (List)result) {
             assertThat(node).isInstanceOf(Map.class);
             assertThat((Map)node).hasSize(2).containsEntry("a", "a-val");
