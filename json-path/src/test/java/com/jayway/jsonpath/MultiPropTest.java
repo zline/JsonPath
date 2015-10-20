@@ -3,6 +3,7 @@ package com.jayway.jsonpath;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.jayway.jsonpath.JsonPath.using;
@@ -66,21 +67,21 @@ public class MultiPropTest {
     public void multi_props_can_be_non_leafs() {
         Object result = JsonPath.parse("{\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1}}").read(
                 "$['a', 'c'].v");
-        assertThat(result).asList().containsOnly(5, 1);
+        assertThat((List)result).containsOnly(5, 1);
     }
 
     @Test
     public void nonexistent_non_leaf_multi_props_ignored() {
         Object result = JsonPath.parse("{\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1}}").read(
                 "$['d', 'a', 'c', 'm'].v");
-        assertThat(result).asList().containsOnly(5, 1);
+        assertThat((List)result).containsOnly(5, 1);
     }
 
     @Test
     public void multi_props_with_post_filter() {
         Object result = JsonPath.parse("{\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1, \"flag\": true}}").read(
                 "$['a', 'c'][?(@.flag)].v");
-        assertThat(result).asList().containsOnly(1);
+        assertThat((List)result).containsOnly(1);
     }
 
     @Test
@@ -88,26 +89,26 @@ public class MultiPropTest {
         // deep scan + multiprop is quite redundant scenario, but it's not forbidden, so we'd better check
         final String json = "{\"v\": [[{}, 1, {\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1, \"flag\": true}}]]}";
         Object result = JsonPath.parse(json).read("$..['a', 'c'].v");
-        assertThat(result).asList().containsOnly(5, 1);
+        assertThat((List)result).containsOnly(5, 1);
 
         result = JsonPath.parse(json).read("$..['a', 'c'][?(@.flag)].v");
-        assertThat(result).asList().containsOnly(1);
+        assertThat((List)result).containsOnly(1);
     }
 
     @Test
     public void multi_props_can_be_in_the_middle() {
         final String json = "{\"x\": [null, {\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1}}]}";
         Object result = JsonPath.parse(json).read("$.x[1]['a', 'c'].v");
-        assertThat(result).asList().containsOnly(5, 1);
+        assertThat((List)result).containsOnly(5, 1);
         result = JsonPath.parse(json).read("$.x[*]['a', 'c'].v");
-        assertThat(result).asList().containsOnly(5, 1);
+        assertThat((List)result).containsOnly(5, 1);
         result = JsonPath.parse(json).read("$[*][*]['a', 'c'].v");
-        assertThat(result).asList().containsOnly(5, 1);
+        assertThat((List)result).containsOnly(5, 1);
 
         result = JsonPath.parse(json).read("$.x[1]['d', 'a', 'c', 'm'].v");
-        assertThat(result).asList().containsOnly(5, 1);
+        assertThat((List)result).containsOnly(5, 1);
         result = JsonPath.parse(json).read("$.x[*]['d', 'a', 'c', 'm'].v");
-        assertThat(result).asList().containsOnly(5, 1);
+        assertThat((List)result).containsOnly(5, 1);
     }
 
     @Test
@@ -115,7 +116,7 @@ public class MultiPropTest {
         final Configuration conf = Configuration.defaultConfiguration().addOptions(Option.REQUIRE_PROPERTIES);
         final String json = "{\"a\": {\"v\": 5}, \"b\": {\"v\": 4}, \"c\": {\"v\": 1}}";
 
-        assertThat(using(conf).parse(json).read("$['a', 'c'].v")).asList().containsOnly(5, 1);
+        assertThat((List)using(conf).parse(json).read("$['a', 'c'].v")).containsOnly(5, 1);
         assertEvaluationThrows(json, "$['d', 'a', 'c', 'm'].v", PathNotFoundException.class, conf);
     }
 }
