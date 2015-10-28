@@ -47,7 +47,6 @@ public class PathCompiler {
     private static final char BRACKET_OPEN = '[';
     private static final char BRACKET_CLOSE = ']';
     private static final char SPACE = ' ';
-    private static final Cache cache = new Cache(200);
 
 
     public static Path compile(final String path, final Predicate... filters) {
@@ -76,13 +75,6 @@ public class PathCompiler {
                     trimmedPath.charAt(1) != '.' &&
                     trimmedPath.charAt(1) != '[') {
                 throw new InvalidPathException("Invalid path " + trimmedPath);
-            }
-
-            String cacheKey = Utils.concat(trimmedPath, Boolean.toString(isRootPath), filterList.toString());
-            Path p = cache.get(cacheKey);
-            if (p != null) {
-                if (logger.isDebugEnabled()) logger.debug("Using cached path: {}", cacheKey);
-                return p;
             }
 
             RootPathToken root = null;
@@ -148,8 +140,6 @@ public class PathCompiler {
             } while (i < trimmedPath.length());
 
             Path pa = new CompiledPath(root, isRootPath);
-
-            cache.put(cacheKey, pa);
 
             return pa;
 
