@@ -59,7 +59,6 @@ public abstract class PathToken {
                         } else {
                             throw new PathNotFoundException("No results for path: " + evalPath);
                         }
-
                     }
                 } else {
                     if (! (isUpstreamDefinite() && isTokenDefinite()) &&
