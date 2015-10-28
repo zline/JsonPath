@@ -16,6 +16,7 @@ package com.jayway.jsonpath;
 
 import com.jayway.jsonpath.internal.Path;
 import com.jayway.jsonpath.internal.PathCompiler;
+import com.jayway.jsonpath.internal.Utils;
 import com.jayway.jsonpath.internal.token.PredicateContextImpl;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import org.slf4j.Logger;
@@ -828,6 +829,8 @@ public class Criteria implements Predicate {
             rightPrepared = rightPath;
         } else if (isString(right)) {
             rightPrepared = right.substring(1, right.length() - 1);
+        } else if(Utils.isNumeric(right)){
+            rightPrepared = new BigDecimal(right);
         } else if (isJson(right)) {
             rightPrepared = new JsonValue(right);
         } else if (isPattern(right)) {
@@ -897,6 +900,8 @@ public class Criteria implements Predicate {
             return expected.compareTo((String) right);
         } else if (left instanceof Number && right instanceof Number) {
             return new BigDecimal(left.toString()).compareTo(new BigDecimal(right.toString()));
+        } else if (left instanceof Number && right instanceof BigDecimal) {
+            return new BigDecimal(left.toString()).compareTo((BigDecimal)right);
         } else if (left instanceof String && right instanceof Number) {
             return new BigDecimal(left.toString()).compareTo(new BigDecimal(right.toString()));
         } else if (left instanceof String && right instanceof Boolean) {
