@@ -41,6 +41,10 @@ public final class TestUtils {
         assertHasResults(json, path, 0, conf);
     }
 
+    public static void assertHasNoResults(final String json, final String path) {
+        assertHasNoResults(json, path, Configuration.defaultConfiguration());
+    }
+
     /**
      * Assertion which requires list of one element as a result of indefinite path search.
      * @param json json to be parsed
@@ -48,6 +52,10 @@ public final class TestUtils {
      */
     public static void assertHasOneResult(final String json, final String path, Configuration conf) {
         assertHasResults(json, path, 1, conf);
+    }
+
+    public static void assertHasOneResult(final String json, final String path) {
+        assertHasOneResult(json, path, Configuration.defaultConfiguration());
     }
 
     /**
@@ -60,5 +68,9 @@ public final class TestUtils {
     public static void assertHasResults(final String json, final String path, final int expectedResultCount, Configuration conf) {
         Object result = JsonPath.using(conf).parse(json).read(path);
         assertThat(conf.jsonProvider().length(result)).isEqualTo(expectedResultCount);
+    }
+
+    public static void assertHasResults(final String json, final String path, final int expectedResultCount) {
+        assertHasResults(json, path, expectedResultCount, Configuration.defaultConfiguration());
     }
 }
