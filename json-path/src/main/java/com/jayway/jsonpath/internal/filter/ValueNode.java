@@ -121,6 +121,10 @@ public abstract class ValueNode {
         throw new InvalidPathException("Expected class node");
     }
 
+    public NumberNode castToNumberNode() {
+        return null;
+    }
+
     private static boolean isPath(Object o) {
         if(o == null || !(o instanceof String)){
             return false;
@@ -399,18 +403,28 @@ public abstract class ValueNode {
 
     public static class StringNode extends ValueNode {
         private final String string;
+        private final NumberNode castToNumberNodeCached;
 
         private StringNode(String str) {
             string = str;
+            NumberNode number = null;
+            try {
+                number = new NumberNode(string);
+            } catch (NumberFormatException exc) {}
+            castToNumberNodeCached = number;
         }
 
-        private StringNode(CharSequence charSequence, boolean escape) {
+        private StringNode(final CharSequence charSequence, final boolean escape) {
+            this(prepareUnescaped(charSequence, escape));
+        }
+
+        private static String prepareUnescaped(CharSequence charSequence, boolean escape) {
             if(charSequence.length() > 1){
                 if(charSequence.charAt(0) == '\'' && charSequence.charAt(charSequence.length()-1) == '\''){
                     charSequence = charSequence.subSequence(1, charSequence.length()-1);
                 }
             }
-            string = escape ? Utils.unescape(charSequence.toString()) : charSequence.toString();
+            return escape ? Utils.unescape(charSequence.toString()) : charSequence.toString();
         }
 
         public String getString() {
@@ -440,6 +454,11 @@ public abstract class ValueNode {
 
         public StringNode asStringNode() {
             return this;
+        }
+
+        @Override
+        public NumberNode castToNumberNode() {
+            return castToNumberNodeCached;
         }
 
         @Override
@@ -480,6 +499,11 @@ public abstract class ValueNode {
         }
 
         public NumberNode asNumberNode() {
+            return this;
+        }
+
+        @Override
+        public NumberNode castToNumberNode() {
             return this;
         }
 

@@ -56,7 +56,12 @@ public class EvaluatorFactory {
             if(left.isJsonNode() && right.isJsonNode()){
                 return left.asJsonNode().equals(right.asJsonNode(), ctx);
             } else {
-                return left.equals(right);
+                final ValueNode.NumberNode NNleft = left.castToNumberNode();
+                final ValueNode.NumberNode NNright = right.castToNumberNode();
+                if(NNleft != null && NNright != null)
+                    return NNleft.equals(NNright);
+                else
+                    return left.equals(right);
             }
         }
     }
@@ -71,9 +76,12 @@ public class EvaluatorFactory {
     private static class LessThanEvaluator implements Evaluator {
         @Override
         public boolean evaluate(ValueNode left, ValueNode right, Predicate.PredicateContext ctx) {
-            if(left.isNumberNode() && right.isNumberNode()){
-                return left.asNumberNode().getNumber().compareTo(right.asNumberNode().getNumber()) < 0;
-            } if(left.isStringNode() && right.isStringNode()){
+            final ValueNode.NumberNode NNleft = left.castToNumberNode();
+            final ValueNode.NumberNode NNright = right.castToNumberNode();
+            if(NNleft != null && NNright != null){
+                return NNleft.getNumber().compareTo(NNright.getNumber()) < 0;
+            }
+            if(left.isStringNode() && right.isStringNode()){
                 return left.asStringNode().getString().compareTo(right.asStringNode().getString()) < 0;
             }
             return false;
@@ -83,9 +91,12 @@ public class EvaluatorFactory {
     private static class LessThanEqualsEvaluator implements Evaluator {
         @Override
         public boolean evaluate(ValueNode left, ValueNode right, Predicate.PredicateContext ctx) {
-            if(left.isNumberNode() && right.isNumberNode()){
-                return left.asNumberNode().getNumber().compareTo(right.asNumberNode().getNumber()) <= 0;
-            } if(left.isStringNode() && right.isStringNode()){
+            final ValueNode.NumberNode NNleft = left.castToNumberNode();
+            final ValueNode.NumberNode NNright = right.castToNumberNode();
+            if(NNleft != null && NNright != null){
+                return NNleft.getNumber().compareTo(NNright.getNumber()) <= 0;
+            }
+            if(left.isStringNode() && right.isStringNode()){
                 return left.asStringNode().getString().compareTo(right.asStringNode().getString()) <= 0;
             }
             return false;
@@ -95,9 +106,12 @@ public class EvaluatorFactory {
     private static class GreaterThanEvaluator implements Evaluator {
         @Override
         public boolean evaluate(ValueNode left, ValueNode right, Predicate.PredicateContext ctx) {
-            if(left.isNumberNode() && right.isNumberNode()){
-                return left.asNumberNode().getNumber().compareTo(right.asNumberNode().getNumber()) > 0;
-            } else if(left.isStringNode() && right.isStringNode()){
+            final ValueNode.NumberNode NNleft = left.castToNumberNode();
+            final ValueNode.NumberNode NNright = right.castToNumberNode();
+            if(NNleft != null && NNright != null){
+                return NNleft.getNumber().compareTo(NNright.getNumber()) > 0;
+            }
+            if(left.isStringNode() && right.isStringNode()){
                 return left.asStringNode().getString().compareTo(right.asStringNode().getString()) > 0;
             }
             return false;
@@ -107,9 +121,12 @@ public class EvaluatorFactory {
     private static class GreaterThanEqualsEvaluator implements Evaluator {
         @Override
         public boolean evaluate(ValueNode left, ValueNode right, Predicate.PredicateContext ctx) {
-            if(left.isNumberNode() && right.isNumberNode()){
-                return left.asNumberNode().getNumber().compareTo(right.asNumberNode().getNumber()) >= 0;
-            } else if(left.isStringNode() && right.isStringNode()){
+            final ValueNode.NumberNode NNleft = left.castToNumberNode();
+            final ValueNode.NumberNode NNright = right.castToNumberNode();
+            if(NNleft != null && NNright != null){
+                return NNleft.getNumber().compareTo(NNright.getNumber()) >= 0;
+            }
+            if(left.isStringNode() && right.isStringNode()){
                 return left.asStringNode().getString().compareTo(right.asStringNode().getString()) >= 0;
             }
             return false;
