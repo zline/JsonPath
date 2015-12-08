@@ -183,6 +183,10 @@ public abstract class ValueNode {
         else throw new JsonPathException("Could not determine value type");
     }
 
+    public static StringNode createStringNode(String str){
+        return new StringNode(str);
+    }
+
     public static StringNode createStringNode(CharSequence charSequence, boolean escape){
         return new StringNode(charSequence, escape);
     }
@@ -395,6 +399,10 @@ public abstract class ValueNode {
 
     public static class StringNode extends ValueNode {
         private final String string;
+
+        private StringNode(String str) {
+            string = str;
+        }
 
         private StringNode(CharSequence charSequence, boolean escape) {
             if(charSequence.length() > 1){

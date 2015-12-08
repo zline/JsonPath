@@ -143,6 +143,14 @@ public class SMRTest extends BaseTest {
     }
 
     @Test
+    public void compiler_tests() {
+        compile("[?(@.name == foo)]");
+        compile("[?(@.name == trueism)]");
+        assertInvalidPathException("[?(@.name == 5foo)]");
+        assertInvalidPathException("[?(@.name == foo*)]");
+    }
+
+    @Test
     public void differences_from_upstream() {
         assertHasOneResult("[\"foo\",\"bar2\"]", "$[?(@==bar2)]", conf);
         assertHasOneResult("[\"foo\",\"bar\"]", "$[?(@==foo)]", conf);

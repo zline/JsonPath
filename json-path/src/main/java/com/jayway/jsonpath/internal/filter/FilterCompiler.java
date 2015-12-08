@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FilterCompiler {
     private static final Logger logger = LoggerFactory.getLogger(FilterCompiler.class);
@@ -36,6 +38,8 @@ public class FilterCompiler {
     private static final char ARRAY_CLOSE = ']';
     private static final char BANG = '!';
     private static final char PATTERN = '/';
+
+    private static final Pattern unquotedStringPattern = Pattern.compile("^([a-z][a-z0-9_]*)", Pattern.CASE_INSENSITIVE);
 
     private CharacterIndex filter;
 
@@ -134,13 +138,20 @@ public class FilterCompiler {
     private ValueNode readLiteral(){
         switch (filter.skipBlanks().currentChar()){
             case TICK:  return readStringLiteral();
-            case TRUE:  return readBooleanLiteral();
-            case FALSE: return readBooleanLiteral();
             case MINUS: return readNumberLiteral();
-            case NULL:  return readNullLiteral();
             case OBJECT_OPEN: return readJsonLiteral();
             case ARRAY_OPEN: return readJsonLiteral();
             case PATTERN: return readPattern();
+        }
+
+        final ValueNode uqStringNode = tryReadUnquotedString();
+        if (uqStringNode != null)
+            return uqStringNode;
+
+        switch (filter.skipBlanks().currentChar()){
+            case TRUE:  return readBooleanLiteral();
+            case FALSE: return readBooleanLiteral();
+            case NULL:  return readNullLiteral();
             default:    return readNumberLiteral();
         }
     }
@@ -285,6 +296,21 @@ public class FilterCompiler {
         logger.trace("BooleanLiteral from {} to {} -> [{}]", begin, end, boolValue);
 
         return ValueNode.createBooleanNode(boolValue);
+    }
+
+    private ValueNode.StringNode tryReadUnquotedString() {
+        final Matcher match = unquotedStringPattern.matcher(filter.charSequence())
+                .region(filter.skipBlanks().position(), filter.length()).useAnchoringBounds(true);
+        if (! match.find())
+            return null;
+
+        final String str = match.group(1);
+        if (! str.equals("true") && ! str.equals("false") && ! str.equals("null")) {
+            filter.incrementPosition(str.length());
+            return ValueNode.createStringNode(str);
+        }
+        else
+            return null;
     }
 
     private ValueNode.PathNode readPath() {
