@@ -53,8 +53,8 @@ public class PathCompiler {
             if(!path.startsWith("$") && !path.startsWith("@")){
                 path = "$." + path;
             }
-            if(path.endsWith("..")){
-                fail("Path must not end wid a scan operation '..'");
+            if(path.endsWith(".")){
+                fail("Path must not end with a '.' or '..'");
             }
             LinkedList filterStack = new LinkedList<Predicate>(asList(filters));
             Path p = new PathCompiler(path.trim(), filterStack).compile();
