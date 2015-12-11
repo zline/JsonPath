@@ -403,6 +403,7 @@ public abstract class ValueNode {
 
     public static class StringNode extends ValueNode {
         private final String string;
+        private boolean useSingleQuote = true;
         private final NumberNode castToNumberNodeCached;
 
         private StringNode(String str) {
@@ -416,11 +417,18 @@ public abstract class ValueNode {
 
         private StringNode(final CharSequence charSequence, final boolean escape) {
             this(prepareUnescaped(charSequence, escape));
+            if (charSequence.length() > 1 && charSequence.charAt(0) == '"')
+                useSingleQuote = false;
         }
 
         private static String prepareUnescaped(CharSequence charSequence, boolean escape) {
             if(charSequence.length() > 1){
-                if(charSequence.charAt(0) == '\'' && charSequence.charAt(charSequence.length()-1) == '\''){
+                char open = charSequence.charAt(0);
+                char close = charSequence.charAt(charSequence.length()-1);
+
+                if(open == '\'' && close == '\''){
+                    charSequence = charSequence.subSequence(1, charSequence.length()-1);
+                } else if(open == '"' && close == '"'){
                     charSequence = charSequence.subSequence(1, charSequence.length()-1);
                 }
             }
@@ -463,7 +471,8 @@ public abstract class ValueNode {
 
         @Override
         public String toString() {
-            return "'" + Utils.escape(string, true) + "'";
+            String quote = useSingleQuote ? "'" : "\"";
+            return quote + Utils.escape(string, true) + quote;
         }
 
         @Override
