@@ -189,4 +189,10 @@ public class DeepScanTest extends BaseTest {
         JsonPath.using(configuration).parse(json).read("$..['a', 'b']");
     }
 
+    @Test
+    public void scan_with_a_function_filter() {
+        List result = JsonPath.parse(JSON_DOCUMENT).read("$..*[?(@.length() > 5)]");
+        assertThat(result).hasSize(1);
+    }
+
 }
