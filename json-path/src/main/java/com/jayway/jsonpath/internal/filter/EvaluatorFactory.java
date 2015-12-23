@@ -136,7 +136,16 @@ public class EvaluatorFactory {
     private static class SizeEvaluator implements Evaluator {
         @Override
         public boolean evaluate(ValueNode left, ValueNode right, Predicate.PredicateContext ctx) {
-            int expectedSize = right.asNumberNode().getNumber().intValue();
+            ValueNode.NumberNode nn = right.castToNumberNode();
+            if (null == nn)
+                return false;
+            int expectedSize;
+            try {
+                expectedSize = nn.getNumber().intValueExact();
+            }
+            catch (ArithmeticException e) {
+                return false;
+            }
 
             if(left.isStringNode()){
                 return left.asStringNode().length() == expectedSize;
