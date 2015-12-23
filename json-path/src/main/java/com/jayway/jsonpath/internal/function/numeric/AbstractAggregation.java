@@ -1,5 +1,6 @@
 package com.jayway.jsonpath.internal.function.numeric;
 
+import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.internal.EvaluationContext;
 import com.jayway.jsonpath.internal.PathRef;
 import com.jayway.jsonpath.internal.function.PathFunction;
@@ -31,6 +32,7 @@ public abstract class AbstractAggregation implements PathFunction {
 
     @Override
     public Object invoke(String currentPath, PathRef parent, Object model, EvaluationContext ctx) {
+        int count = 0;
         if(ctx.configuration().jsonProvider().isArray(model)){
 
             Iterable<?> objects = ctx.configuration().jsonProvider().toIterable(model);
@@ -38,10 +40,15 @@ public abstract class AbstractAggregation implements PathFunction {
                 if (obj instanceof Number) {
                     Number value = (Number) obj;
                     next(value);
+                    count++;
                 }
             }
-            return getValue();
+            if (count != 0) {
+                return getValue();
+            }
         }
-        return null;
+
+        assert count == 0;
+        throw new InvalidPathException("Aggregation function attempted to calculate value using empty array");
     }
 }
