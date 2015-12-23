@@ -1,5 +1,6 @@
 package com.jayway.jsonpath.old;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.JsonObject;
 import com.jayway.jsonpath.BaseTest;
 import com.jayway.jsonpath.Configuration;
@@ -31,6 +32,7 @@ import static com.jayway.jsonpath.Criteria.PredicateContext;
 import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.Filter.filter;
 import static com.jayway.jsonpath.JsonPath.read;
+import static com.jayway.jsonpath.JsonPath.using;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -324,7 +326,7 @@ public class IssuesTest extends BaseTest {
     @Test
     public void issue_22b() throws Exception {
         String json = "{\"a\":[{\"b\":1,\"c\":2},{\"b\":5,\"c\":2}]}";
-        List<Object> res = JsonPath.using(Configuration.defaultConfiguration().setOptions(Option.DEFAULT_PATH_LEAF_TO_NULL)).parse(json).read("a[?(@.b==5)].d");
+        List<Object> res = using(Configuration.defaultConfiguration().setOptions(Option.DEFAULT_PATH_LEAF_TO_NULL)).parse(json).read("a[?(@.b==5)].d");
         assertThat(res).hasSize(1).containsNull();
     }
 
@@ -457,7 +459,7 @@ public class IssuesTest extends BaseTest {
 
         assertThat(read(json, "test")).isNull();
 
-        assertThat(JsonPath.using(Configuration.defaultConfiguration().setOptions(Option.SUPPRESS_EXCEPTIONS)).parse(json).read("nonExistingProperty")).isNull();
+        assertThat(using(Configuration.defaultConfiguration().setOptions(Option.SUPPRESS_EXCEPTIONS)).parse(json).read("nonExistingProperty")).isNull();
 
         try {
             read(json, "nonExistingProperty");
@@ -492,7 +494,7 @@ public class IssuesTest extends BaseTest {
         String json = "{\"a\": {}}";
 
         Configuration configuration = Configuration.defaultConfiguration().setOptions(Option.SUPPRESS_EXCEPTIONS);
-        assertThat(JsonPath.using(configuration).parse(json).read("a.x")).isNull();
+        assertThat(using(configuration).parse(json).read("a.x")).isNull();
 
         try {
             read(json, "a.x");
@@ -747,7 +749,7 @@ public class IssuesTest extends BaseTest {
                 .mappingProvider(new GsonMappingProvider())
                 .build();
 
-        DocumentContext context = JsonPath.using(conf).parse(json);
+        DocumentContext context = using(conf).parse(json);
         context.delete("$.books[?(@.category == 'reference')]");
 
         List<String> categories = context.read("$..category", List.class);
@@ -775,7 +777,7 @@ public class IssuesTest extends BaseTest {
 
         Configuration configuration = Configuration.defaultConfiguration().addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL);
 
-        List<String> keys = JsonPath.using(configuration).parse(json).read("$.array1[*].array2[0].key");
+        List<String> keys = using(configuration).parse(json).read("$.array1[*].array2[0].key");
     }
 
 
@@ -944,5 +946,23 @@ public class IssuesTest extends BaseTest {
         JsonPath path = JsonPath.compile("$.foo");
         String object = path.read(json);
 
+    }
+
+    @Test
+    public void issue_171() {
+
+        String json = "{\n" +
+                "  \"can delete\": \"this\",\n" +
+                "  \"can't delete\": \"this\"\n" +
+                "}";
+
+        DocumentContext context = using(JACKSON_JSON_NODE_CONFIGURATION).parse(json);
+        context.set("$.['can delete']", null);
+        context.set("$.['can\\'t delete']", null);
+
+        ObjectNode objectNode = context.read("$");
+
+        assertThat(objectNode.get("can delete").isNull());
+        assertThat(objectNode.get("can't delete").isNull());
     }
 }
