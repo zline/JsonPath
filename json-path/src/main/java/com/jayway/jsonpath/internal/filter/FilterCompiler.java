@@ -78,14 +78,20 @@ public class FilterCompiler {
     }
 
     public Predicate compile() {
-        final ExpressionNode result = readLogicalOR();
-        filter.skipBlanks();
-        if (filter.inBounds()) {
-            throw new InvalidPathException(String.format("Expected end of filter expression instead of: %s",
-                    filter.subSequence(filter.position(), filter.length())));
-        }
+        try {
+            final ExpressionNode result = readLogicalOR();
+            filter.skipBlanks();
+            if (filter.inBounds()) {
+                throw new InvalidPathException(String.format("Expected end of filter expression instead of: %s",
+                        filter.subSequence(filter.position(), filter.length())));
+            }
 
-        return result;
+            return result;
+        } catch (InvalidPathException e){
+            throw e;
+        } catch (Exception e) {
+            throw new InvalidPathException("Failed to parse filter: " + filter + ", error on position: " + filter.position() + ", char: " + filter.currentChar());
+        }
     }
 
     private ValueNode readValueNode() {
