@@ -2,6 +2,7 @@ package com.jayway.jsonpath.internal.filter;
 
 import com.jayway.jsonpath.JsonPathException;
 import com.jayway.jsonpath.Predicate;
+import com.jayway.jsonpath.internal.regex.TooManyRegexLookupsException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -250,7 +251,11 @@ public class EvaluatorFactory {
             ValueNode.PatternNode patternNode = left.isPatternNode() ? left.asPatternNode() : right.asPatternNode();
             ValueNode.StringNode stringNode = left.isStringNode() ? left.asStringNode() : right.asStringNode();
 
-            return patternNode.getCompiledPattern().matcher(stringNode.getString()).matches();
+            try {
+                return patternNode.getCompiledPattern().matches(stringNode.getString());
+            } catch (TooManyRegexLookupsException exc) {
+                return false;
+            }
         }
     }
 }

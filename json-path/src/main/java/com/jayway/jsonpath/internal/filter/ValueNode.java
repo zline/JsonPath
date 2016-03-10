@@ -10,6 +10,7 @@ import com.jayway.jsonpath.internal.Path;
 import com.jayway.jsonpath.internal.Utils;
 import com.jayway.jsonpath.internal.path.PathCompiler;
 import com.jayway.jsonpath.internal.path.PredicateContextImpl;
+import com.jayway.jsonpath.internal.regex.InterruptablePattern;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -246,7 +247,7 @@ public abstract class ValueNode {
     //----------------------------------------------------
     public static class PatternNode extends ValueNode {
         private final String pattern;
-        private final Pattern compiledPattern;
+        private final InterruptablePattern compiledPattern;
 
         private PatternNode(CharSequence charSequence) {
             String tmp = charSequence.toString();
@@ -254,16 +255,16 @@ public abstract class ValueNode {
             int end = tmp.lastIndexOf('/');
             int flags = tmp.endsWith("/i") ? Pattern.CASE_INSENSITIVE : 0;
             this.pattern = tmp.substring(begin + 1, end);
-            this.compiledPattern  = Pattern.compile(pattern, flags);
+            this.compiledPattern  = new InterruptablePattern(pattern, flags);
         }
 
         public PatternNode(Pattern pattern) {
             this.pattern = pattern.pattern();
-            this.compiledPattern = pattern;
+            this.compiledPattern = new InterruptablePattern(pattern);
         }
 
 
-        public Pattern getCompiledPattern() {
+        public InterruptablePattern getCompiledPattern() {
             return compiledPattern;
         }
 
@@ -284,7 +285,7 @@ public abstract class ValueNode {
         public String toString() {
 
             String flags = "";
-            if((compiledPattern.flags() & Pattern.CASE_INSENSITIVE) == Pattern.CASE_INSENSITIVE){
+            if((compiledPattern.getPattern().flags() & Pattern.CASE_INSENSITIVE) == Pattern.CASE_INSENSITIVE){
                 flags = "i";
             }
             if(!pattern.startsWith("/")){
@@ -301,8 +302,7 @@ public abstract class ValueNode {
 
             PatternNode that = (PatternNode) o;
 
-            return !(compiledPattern != null ? !compiledPattern.equals(that.compiledPattern) : that.compiledPattern != null);
-
+            return compiledPattern.equals(that.compiledPattern);
         }
     }
 
