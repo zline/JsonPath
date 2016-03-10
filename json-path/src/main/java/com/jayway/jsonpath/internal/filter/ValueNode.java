@@ -406,12 +406,18 @@ public abstract class ValueNode {
         private boolean useSingleQuote = true;
         private final NumberNode castToNumberNodeCached;
 
+        private static final Pattern numberNodePattern = Pattern.compile("[\\+\\-]?(?:[0-9]+|[0-9]*\\.[0-9]+)(?:[eE][\\+\\-]?[0-9]+)?");
+
         private StringNode(String str) {
             string = str;
             NumberNode number = null;
-            try {
-                number = new NumberNode(string);
-            } catch (NumberFormatException exc) {}
+            if (couldBeANumber(string)) {
+                // its costly to try to parse unconditionally (traceback creation costs a lot)
+                try {
+                    number = new NumberNode(string);
+                } catch (NumberFormatException exc) {
+                }
+            }
             castToNumberNodeCached = number;
         }
 
@@ -433,6 +439,17 @@ public abstract class ValueNode {
                 }
             }
             return escape ? Utils.unescape(charSequence.toString()) : charSequence.toString();
+        }
+
+        static boolean couldBeANumber(final String str) {
+            if (str.isEmpty())
+                return false;
+
+            final char first = str.charAt(0);
+            if (('0' > first || first > '9') && '-' != first && '+' != first && '.' != first)
+                return false;
+
+            return numberNodePattern.matcher(str).matches();
         }
 
         public String getString() {
